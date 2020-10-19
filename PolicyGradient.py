@@ -1,27 +1,23 @@
 '''
 Author: Owen Mo
-Implementation of a DQN agent
+Implementation of a Policy Gradient agent
 '''
 import random
-import copy
 import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from utils import average_weights
 from torch_utils.builder import build_fc
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 default_config = {
     "latent_dim": 1024,
     "discount": 0.99,
     "lr": 3e-4,
-    "explore_eps": 0.1,
-    "tau": 0.99,
+    "explore_eps": 0.1
 }
 
-class DQN():
+class PolicyGradient():
     '''
     A DQN agent
     State Space: Continuous
@@ -33,20 +29,17 @@ class DQN():
         # action_dim should be an int
         self.action_dim = action_dim
         if config is None:
-            config = default_config.copy()
+            config = default_config
         self.discount = config["discount"]
         self.eps = config["explore_eps"]
-        self.update_freq = config["update_freq"]
-        self.update_counter = 0
         self._build_networks(config["latent_dim"], config["lr"])
 
     def _build_networks(self, latent_dim, lr):
-        self.target_Q_net = nn.Sequential(
+        self.Q_net = nn.Sequential(
             build_fc(self.state_dim[0], latent_dim),
             build_fc(latent_dim, latent_dim),
-            build_fc(latent_dim, self.action_dim, activation='none')
+            build_fc(latent_dim, self.action_dim)
         )
-        self.Q_net = copy.deepcopy(self.target_Q_net)
         self.Q_optimizer = optim.Adam(self.Q_net.parameters(), lr=lr)
 
     def select_action(self, state):
@@ -67,7 +60,7 @@ class DQN():
         not_done = 1 - done
         
         with torch.no_grad():
-            next_Q = self.target_Q_net(next_state)
+            next_Q = self.Q_net(next_state)
         
         target_values = reward + not_done * self.discount * torch.max(next_Q, 1).values
         
@@ -83,9 +76,6 @@ class DQN():
         self.Q_optimizer.zero_grad()
         loss.backward()
         self.Q_optimizer.step()
-    
-        # Update target network if needed
-        self.target_Q_net.load_state_dict(average_weights(self.target_Q_net.state_dict(), self.Q_net.state_dict(), self.tau)
 
 
         

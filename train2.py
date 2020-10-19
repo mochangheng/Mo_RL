@@ -3,7 +3,7 @@ import torch
 import gym
 
 from replay import ReplayBuffer
-from DQN import DQN
+from DDPG import DDPG
 from utils import TransitionTuple
 from envs import registry
 
@@ -11,13 +11,13 @@ START_TIMESTEP = 1000
 TOTAL_TIMESTEPS = 100000
 BATCH_SIZE = 100
 RENDER = False
-env_name = "cart_pole"
+env_name = "pendulum"
 
 def main():
     env_spec = registry[env_name]
     env = gym.make(env_spec["id"])
     ep_max_steps = env_spec["max_episode_steps"]
-    agent = DQN(env.observation_space.shape, env.action_space.n)
+    agent = DDPG(env.observation_space.shape, env.action_space.shape, env.action_space.low[0], env.action_space.high[0])
     replay_buffer = ReplayBuffer()
 
     state = env.reset()

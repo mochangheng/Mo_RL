@@ -11,4 +11,8 @@ registry = {
         "id": "Pendulum-v0",
         "max_episode_steps": 200,
     },
+    "mountain_car_continuous": {
+        "id": "MountainCarContinuous-v0",
+        "max_episode_steps": 999,
+    }
 }
