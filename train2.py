@@ -1,6 +1,8 @@
 import numpy as np
 import torch
 import gym
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 from replay import ReplayBuffer
 from DDPG import DDPG
@@ -8,9 +10,10 @@ from utils import TransitionTuple
 from envs import registry
 
 START_TIMESTEP = 1000
-TOTAL_TIMESTEPS = 100000
+TOTAL_TIMESTEPS = 20000
 BATCH_SIZE = 100
 RENDER = False
+OUTPUT_PLOT = "DDPG.png"
 env_name = "pendulum"
 
 def main():
@@ -25,6 +28,7 @@ def main():
     ep_timesteps = 0
     ep_reward = 0
     ep_num = 0
+    reward_history = []
 
     for t in range(TOTAL_TIMESTEPS):
         ep_timesteps += 1
@@ -48,6 +52,7 @@ def main():
             agent.train(replay_buffer, BATCH_SIZE)
 
         if done:
+            reward_history.append(ep_reward)
             print(f"[Episode {ep_num+1}, Timestep {t+1}] Total reward: {ep_reward}  Total timesteps: {ep_timesteps}")
             state = env.reset()
             done = False
@@ -57,6 +62,13 @@ def main():
 
         if RENDER:
             env.render()
+
+    # Visualize results
+    if OUTPUT_PLOT:
+        sns.lineplot(x=np.arange(len(reward_history))+1, y=reward_history)
+        plt.ylabel("Episode Reward")
+        plt.xlabel("Episode Number")
+        plt.savefig(OUTPUT_PLOT)
 
 if __name__ == "__main__":
     main()

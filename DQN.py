@@ -36,8 +36,7 @@ class DQN():
             config = default_config.copy()
         self.discount = config["discount"]
         self.eps = config["explore_eps"]
-        self.update_freq = config["update_freq"]
-        self.update_counter = 0
+        self.tau = config["tau"]
         self._build_networks(config["latent_dim"], config["lr"])
 
     def _build_networks(self, latent_dim, lr):
@@ -85,7 +84,7 @@ class DQN():
         self.Q_optimizer.step()
     
         # Update target network if needed
-        self.target_Q_net.load_state_dict(average_weights(self.target_Q_net.state_dict(), self.Q_net.state_dict(), self.tau)
+        self.target_Q_net.load_state_dict(average_weights(self.target_Q_net.state_dict(), self.Q_net.state_dict(), self.tau))
 
 
         
